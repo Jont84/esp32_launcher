@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  menu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Menu logic, on the PC
+        run: |
+          cc -std=c11 -Wall -Wextra -Werror -Wno-missing-field-initializers -fsanitize=address,undefined \
+             -Imain host/menu_shot.c main/menu.c main/font_data.c -o menu_shot
+          ./menu_shot
+      - name: Partition table is shared table v2
+        run: |
+          curl -sSfL -o gen_esp32part.py https://raw.githubusercontent.com/espressif/esp-idf/v5.4.1/components/partition_table/gen_esp32part.py
+          python3 gen_esp32part.py --flash-size 16MB partitions.csv pt.bin
+          echo "1885e8efc01ca8329096e7a2400d9918  pt.bin" | md5sum -c
+
+  esp32:
+    runs-on: ubuntu-latest
+    container: espressif/idf:v5.4.1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build firmware
+        shell: bash
+        run: |
+          git config --global --add safe.directory "$GITHUB_WORKSPACE"
+          . "$IDF_PATH/export.sh"
+          idf.py build
+          idf.py size
+          grep -q '"project_name": "launcher"' build/project_description.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: launcher-esp32
+          path: |
+            build/launcher.bin
+            build/bootloader/bootloader.bin
+            build/partition_table/partition-table.bin

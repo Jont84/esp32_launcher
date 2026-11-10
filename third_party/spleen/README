@@ -1,0 +1,3 @@
+Spleen 2.1.0 by Frederic Cambus, https://github.com/fcambus/spleen
+BSD 2-Clause licence (LICENSE). Only the 6x12 and 8x16 BDF files are used;
+font_data.c here is copied from Adventure (generated there by tools/bdf2c.py).

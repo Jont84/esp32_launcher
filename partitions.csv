@@ -1,0 +1,15 @@
+# Shared partition table v2 for the ES3C28P (16 MB flash), agreed between
+# Keen, Penguins and Adventure on 2026-11-10. Every project uses the same
+# entries; check with: gen_esp32part.py --flash-size 16MB partitions.csv pt.bin
+# and compare md5sum of pt.bin across the three projects.
+# Name,         Type, SubType, Offset,   Size
+nvs,            data, nvs,     0x9000,   0x6000
+otadata,        data, ota,     0xf000,   0x2000
+phy_init,       data, phy,     0x11000,  0x1000
+factory,        app,  factory, 0x20000,  0x100000
+keen_app,       app,  ota_0,   0x120000, 0x300000
+penguins_app,   app,  ota_1,   0x420000, 0x100000
+adventure_app,  app,  ota_2,   0x520000, 0x200000
+keen,           data, fat,     0x720000, 0x400000
+penguins,       data, fat,     0xB20000, 0x300000
+adventure,      data, fat,     0xE20000, 0x1E0000
