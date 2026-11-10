@@ -8,6 +8,10 @@ It lives in the **factory** slot of the shared partition table v2, and its
 ESP-IDF project is named **`launcher`**: that name is how the games recognise
 it, so don't rename the project.
 
+For the Keen and Penguins projects, **[HANDOFF.md](HANDOFF.md)** has
+everything a game needs to join: the table, the four rules with code, and how
+to write and update a game on the board.
+
 ## The launcher contract
 
 All three games follow these rules, so the menu treats them alike:
