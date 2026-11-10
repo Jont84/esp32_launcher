@@ -135,22 +135,16 @@ launcher and the other games aren't touched.
 - **Keep the slot size in mind** (section 1): compare the `.bin` with its
   own slot, by hand or in CI. Keen 3 MB, Penguins 1 MB, Adventure 2 MB.
 
-## 6. What each project still has to do
+## 6. Status (2026-11-10)
 
-**Penguins** (on the board now, stand-alone in factory):
-1. Rules 2a and 2c (2b and 2d: already done, per its thread).
-2. After table v2 is on the board: its app into `penguins_app`, its 2.7 MB
-   asset pack into the 3 MB `penguins` partition.
-3. CI check of the table md5.
+All three games follow this handoff, and each has a `flash.sh` that writes
+only its own slots and checks the table first:
 
-**Keen** (not on the board; backup in `keen_backup.bin`):
-1. Table v2 (Keen's offsets don't move: `keen_app` 0x120000, `keen` 0x720000).
-2. Rules 2a-2d. For 2b, a "quit to menu" choice in Keen's own menu that
-   saves and calls `esp_restart()`. The BOOT-as-Esc fallback in
-   `keen_input.c` can stay, but isn't needed: the controller is always
-   connected.
-3. App into `keen_app`, data into `keen` (once: that holds the saves).
+| Game | App | Slot | Data | Saves | Quit |
+| --- | --- | --- | --- | --- | --- |
+| Keen | 614 KB | 3 MB | game data in `keen` (4 MB) | in `keen` | Keen's own Quit item |
+| Penguins | 488 KB | 1 MB | 2.7 MB asset pack in `penguins` (3 MB) | NVS `penguins` | "QUIT GAME" in its menu (stick press) |
+| Adventure | 337 KB | 2 MB | not used yet | NVS `adventure` | "Save and quit" in its menu (OK) |
 
-The board itself is moved over in the order in the launcher's README:
-backup, table v2, Penguins into its slot, Adventure, launcher into factory,
-`erase_otadata`.
+The size check in section 1 turned out not to bite: every app is under 1 MB.
+The board is moved over in the order in the launcher's README.

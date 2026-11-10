@@ -65,38 +65,51 @@ cc -std=c11 -Imain host/menu_shot.c main/menu.c main/font_data.c -o menu_shot
 
 ## Moving the board onto the launcher
 
-The board today: table v1, Penguins running stand-alone from factory, Keen
-not on the board (its backup is `keen_backup.bin`). In this order:
+Once, in this order. Each game's `flash.sh` writes only that game's own
+slots, and checks first that the board has table v2. All four live in their
+project folders.
 
 ```
-PT="python $IDF_PATH/components/partition_table/parttool.py"
-OTA="python $IDF_PATH/components/app_update/otatool.py"
+. ~/esp/esp-idf/export.sh
 ```
 
-1. **Back up** the board: `esptool.py -p /dev/ttyACM0 read_flash 0 0x1000000 ~/es3c28p_backup.bin`
-2. **Table v2**, once for everyone (from this folder or any of the projects):
+1. **Back up the board** (a few minutes):
    ```
+   esptool.py -p /dev/ttyACM0 read_flash 0 0x1000000 ~/es3c28p_backup.bin
+   ```
+2. **Partition table v2**, from this folder:
+   ```
+   cd ~/esp32_launcher && git pull
    python $IDF_PATH/components/partition_table/gen_esp32part.py --flash-size 16MB partitions.csv /tmp/pt-v2.bin
    esptool.py -p /dev/ttyACM0 write_flash 0x8000 /tmp/pt-v2.bin
    ```
-3. **Penguins into its own slot**, and its asset pack into the 3 MB `penguins`
-   partition: the Penguins project's steps. (Writing the launcher into factory
-   in step 5 replaces the Penguins copy there.)
-4. **Adventure**, from the Adventure project's `esp32` folder:
-   `$PT -p /dev/ttyACM0 write_partition --partition-name adventure_app --input build/adventure_esp32.bin`
-5. **The launcher**, from this folder:
-   `$PT -p /dev/ttyACM0 write_partition --partition-name factory --input build/launcher.bin`
-6. **Boot the launcher:** clear the boot choice so the bootloader starts factory:
-   `$OTA -p /dev/ttyACM0 erase_otadata`
+3. **Penguins** (app and asset pack):
+   ```
+   cd ~/penguins && git pull && cd esp32 && idf.py build && ./flash.sh /dev/ttyACM0
+   ```
+4. **Adventure:**
+   ```
+   cd ~/projects/Adventure && git pull && cd esp32 && idf.py build && ./flash.sh
+   ```
+5. **Keen** (app and game data, the first time):
+   ```
+   cd ~/esp/keen_esp32 && idf.py build && ./flash.sh both
+   ```
+6. **The launcher**, and make it the one that starts:
+   ```
+   cd ~/esp32_launcher && idf.py build && ./flash.sh boot
+   ```
 
-Keen joins later from the Keen project (its handoff, section 2): rebuilt with
-table v2 and the "set factory at start only if it's the launcher" rule, then
-written into `keen_app`, with its data in `keen`. Until then its entry shows
-"not installed".
+Press reset: the menu appears, with all three games.
 
-Don't use `idf.py flash` once the games are on the board: it rewrites the
-bootloader and table along with the app. `write_partition` touches only the
-slot it names.
+## Updating a game later
+
+Only that game's own `flash.sh`. The table, the launcher and the other games
+aren't touched, and saves are kept: Adventure and Penguins save in NVS; Keen's
+`./flash.sh app` leaves its data partition (and its saves) alone.
+
+Don't use `idf.py flash` once the launcher is on the board: it writes into
+the factory slot and rewrites the bootloader and table.
 
 ## Files
 
@@ -107,3 +120,5 @@ slot it names.
 | `main/display.c`, `input.c`, `board.h` | Display and joystick drivers, from the Keen port via Adventure |
 | `main/font_data.c` | Spleen 6x12 and 8x16 fonts (BSD 2-Clause, `third_party/spleen`) |
 | `host/menu_shot.c` | Renders the menu on a PC and checks its logic (CI runs it) |
+| `flash.sh` | Writes the launcher into factory only (`boot`: and starts it next) |
+| `HANDOFF.md` | What a game needs to join the launcher |
