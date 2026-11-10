@@ -32,7 +32,8 @@ jobs:
           . "$IDF_PATH/export.sh"
           idf.py build
           idf.py size
-          grep -q '"project_name": "launcher"' build/project_description.json
+          # the games recognise the launcher by this name (launcher contract)
+          python3 -c "import json,sys; n=json.load(open('build/project_description.json'))['project_name']; print('project name:', n); sys.exit(n != 'launcher')"
       - uses: actions/upload-artifact@v4
         with:
           name: launcher-esp32
