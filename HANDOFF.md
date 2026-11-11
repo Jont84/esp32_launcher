@@ -2,7 +2,7 @@
 
 For the Keen and Penguins projects (and any later game) on the LCDwiki
 ES3C28P handheld. From the launcher repo, `Jont84/esp32_launcher`, as of
-2026-11-10. Adventure already follows all of this.
+2026-11-11. Adventure already follows all of this.
 
 ## 1. The partition table: v2, byte for byte
 
@@ -135,7 +135,7 @@ launcher and the other games aren't touched.
 - **Keep the slot size in mind** (section 1): compare the `.bin` with its
   own slot, by hand or in CI. Keen 3 MB, Penguins 1 MB, Adventure 2 MB.
 
-## 6. Status (2026-11-10)
+## 6. Status (2026-11-11)
 
 All three games follow this handoff, and each has a `flash.sh` that writes
 only its own slots and checks the table first:
@@ -144,7 +144,18 @@ only its own slots and checks the table first:
 | --- | --- | --- | --- | --- | --- |
 | Keen | 614 KB | 3 MB | game data in `keen` (4 MB) | in `keen` | Keen's own Quit item |
 | Penguins | 488 KB | 1 MB | 2.7 MB asset pack in `penguins` (3 MB) | NVS `penguins` | "QUIT GAME" in its menu (stick press) |
-| Adventure | 337 KB | 2 MB | not used yet | NVS `adventure` | "Save and quit" in its menu (OK) |
+| Adventure | 371 KB (CI build, 11 Nov) | 2 MB | not used yet | NVS `adventure` | "Save and quit" in its menu (OK) |
 
 The size check in section 1 turned out not to bite: every app is under 1 MB.
 The board is moved over in the order in the launcher's README.
+
+The whole board (launcher plus all three games) was flashed and tested on
+2026-11-10: every slot starts from the menu, and save, quit and reboot work.
+
+**Adventure is paused on the board (its D66).** It is developed on the
+desktop until its milestone H1, so its slot holds the 10 Nov build until
+then. Its saves changed format on 11 Nov (version 3, a clock instead of
+turns); the old save on the board will be rejected cleanly when the new
+build goes on. Nothing about the table, the launcher contract or the other
+slots changes. When Adventure returns at H1 it adds the touch (FT6336) and
+audio (ES8311/I2S) drivers, using the pins verified by the Keen port.
